@@ -12,3 +12,7 @@ def redirectToWebsite(shorturl):
             longURL='https://'+longURL
         return redirect(longURL,code=302)
     return "URL Not Found",404
+
+@app.route('/')
+def home():
+    return "Welcome to Shorty.az"
