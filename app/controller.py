@@ -3,6 +3,7 @@ from flask import request,jsonify
 from app.models import db,User
 
 elements="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+domain="shorty.westeurope.cloudapp.azure.com/"
 
 def base10tobase62(num):
     ret=''
@@ -21,7 +22,6 @@ def shortenURL():
     counter=results["counter"]
     print(counter)
     shorturl=base10tobase62(counter)
-    shorturl="shorty.az/"+shorturl
     db.variables.update_one({"_id":"counter"},{"$inc":{"counter":1}})
     response={
         "shortURL":shorturl,
@@ -29,6 +29,7 @@ def shortenURL():
         "_id":counter
     }
     db.websites.insert_one(response)
+    response["shortURL"]=domain+shorturl
     return response
 
 @app.route('/api/getLongURL',methods=["GET","POST"])

@@ -3,9 +3,10 @@ from app.models import db
 from flask import redirect
 from app.controller import getLongURL
 
+domain="shorty.westeurope.cloudapp.azure.com/"
+
 @app.route('/<shorturl>')
 def redirectToWebsite(shorturl):
-    shorturl='shorty.az/'+shorturl
     longURL=getLongURL(shorturl)
     if not longURL=="URL Not Found":
         if not ('http://' in longURL or 'https://' in longURL):
