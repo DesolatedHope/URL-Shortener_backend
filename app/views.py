@@ -1,23 +1,14 @@
 from app import app
 from app.models import db
-import requests
-import json
 from flask import redirect
-
-apiurl='url-shortenerbackend-production.up.railway.app/api/getLongURL'
+from app.controller import getLongURL
 
 @app.route('/<shorturl>')
 def redirectToWebsite(shorturl):
     shorturl='shorty.az/'+shorturl
-    data={
-        "shortURL":shorturl
-    }
-    response=requests.post(apiurl,json=data)
-    if response.status_code==200:
-        longURL=response.json()
+    longURL=getLongURL(shorturl)
+    if not longURL=="URL Not Found":
         if not ('http://' in longURL or 'https://' in longURL):
             longURL='https://'+longURL
         return redirect(longURL,code=302)
-    else:
-        return "URL Not Found",404
-    return "Hello World"
+    return "URL Not Found",404
