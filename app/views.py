@@ -4,7 +4,7 @@ import requests
 import json
 from flask import redirect
 
-apiurl='http://127.0.0.1:5000/api/getLongURL'
+apiurl='url-shortenerbackend-production.up.railway.app/api/getLongURL'
 
 @app.route('/<shorturl>')
 def redirectToWebsite(shorturl):
