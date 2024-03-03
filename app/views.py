@@ -11,4 +11,4 @@ def redirectToWebsite(shorturl):
         if not ('http://' in longURL or 'https://' in longURL):
             longURL='https://'+longURL
         return redirect(longURL,code=302)
-    return "URL Not Found",404
+    return "URL Not Found"
