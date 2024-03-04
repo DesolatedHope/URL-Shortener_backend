@@ -3,7 +3,7 @@ from flask import request,jsonify
 from app.models import db,User
 from flask_cors import CORS, cross_origin
 
-CORS(app, resources={r"/api/getLongURL": {"origins": "http://localhost:5173"}})
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
 
 elements="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 domain="shorty.westeurope.cloudapp.azure.com/"
