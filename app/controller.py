@@ -2,6 +2,7 @@ from app import app
 from flask import request,jsonify
 from app.models import db,User
 from flask_cors import CORS, cross_origin
+from flask_jwt_extended import jwt_required,get_jwt_identity
 
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
 
@@ -19,6 +20,7 @@ def base10tobase62(num):
 
 @app.route('/api/getShortURL',methods=["GET","POST"])
 @cross_origin()
+@jwt_required()
 def shortenURL():
     data=request.get_json()
     longurl=data['longURL']
@@ -26,6 +28,7 @@ def shortenURL():
     counter=results["counter"]
     print(counter)
     shorturl=base10tobase62(counter)
+    email=get_jwt_identity()
     db.variables.update_one({"_id":"counter"},{"$inc":{"counter":1}})
     response={
         "shortURL":shorturl,
@@ -54,16 +57,15 @@ def getLongURL(shorturl):
         return longURL
     return "URL Not Found"
 
-@app.route('/api/user/signup',methods=['POST'])
+@app.route('/api/createToken',methods=['POST'])
+@cross_origin()
+def create_token():
+    email=request.get_json()['email']
+    password=request.get_json()['password']
+    return User().create_token(email,password)
+
+@app.route('/api/signup',methods=['POST'])
+@cross_origin()
 def signup():
     user=request.get_json()
     return User().signup(user)
-
-@app.route('/api/user/signout',methods=['POST'])
-def signout():
-    return User().signout()
-
-@app.route('/api/user/login',methods=['POST'])
-def login():
-    user=request.get_json()
-    return User().login(user)
