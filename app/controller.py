@@ -27,10 +27,11 @@ def shortenURL():
     longurl=data['longURL']
     results=db.variables.find_one({"_id":"counter"})
     counter=results["counter"]
-    print(counter)
     shorturl=base10tobase62(counter)
     email=get_jwt_identity()
     db.variables.update_one({"_id":"counter"},{"$inc":{"counter":1}})
+    db.variables.update_one({"_id":"websites"},{"$inc":{"websites":1}})
+    db.variables.update_one({"_id":"active"},{"$inc":{"active":1}})
     response={
         "_id":counter,
         "shortURL":shorturl,
@@ -64,12 +65,11 @@ def getLongURL(shorturl):
     results=db.websites.find_one({"shortURL":shorturl})
     if results:
         email=results['user']
-        db.users.update_one({"email": email, "websites._id": results["_id"]}, {
-            "$inc": {
-                "websites.$.clicks": 1
-            }
-        })
-        db.websites.update_one({"shortURL":shorturl},{"$inc":{"clicks":1}})
+        if results['isActive']==True:
+            db.users.update_one({"email": email, "websites._id": results["_id"]}, {"$inc": {"websites.$.clicks": 1}})
+            db.users.update_one({"email": email}, {"$inc": {"clicks": 1}})
+            db.variables.update_one({"_id":"clicks"},{"$inc":{"clicks":1}})
+            db.websites.update_one({"shortURL":shorturl},{"$inc":{"clicks":1}})
         if results['isActive']==False:
             return "URL Not Found"
         longURL=results['longURL']
@@ -95,7 +95,6 @@ def signup():
 def getTableData():
     email=get_jwt_identity()
     result=db.users.find_one({"email":email})
-    print(result)
     table=[]
     if result['websites']:
         table=result['websites']
@@ -108,6 +107,7 @@ def inactivateURL():
     data=request.get_json()
     shortURL=data['shortURL']
     email=get_jwt_identity()
+    db.variables.update_one({"_id":"active"},{"$inc":{"active":-1}})
     db.websites.update_one({"shortURL":shortURL,"user":email},{"$set":{"isActive":False}})
     return jsonify({"message":"URL Inactivated"})
 
@@ -118,6 +118,7 @@ def deleteURL():
     data=request.get_json()
     shortURL=data['shortURL']
     email=get_jwt_identity()
+    db.variables.update_one({"_id":"active"},{"$inc":{"active":-1}})
     db.users.update_one({"email": email}, {
         "$pull": {
             "websites": {
