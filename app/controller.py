@@ -109,9 +109,20 @@ def inactivateURL():
     data=request.get_json()
     shortURL=data['shortURL']
     email=get_jwt_identity()
-    db.variables.update_one({"_id":"counter"},{"$inc":{"active":-1}})
-    db.websites.update_one({"shortURL":shortURL,"user":email},{"$set":{"isActive":False}})
-    db.users.update_one({"email": email},{"$inc":{"active":-1}})
+    result=db.websites.find_one({"shortURL":shortURL})
+    print(shortURL)
+    shortURL=shortURL[-7:]
+    print(result)
+    if result['isActive']==True:
+        db.variables.update_one({"_id":"counter"},{"$inc":{"active":-1}})
+        db.users.update_one({"email": email}, {"$inc": {"active": -1}})
+        db.websites.update_one({"shortURL":shortURL},{"$set":{"isActive":False}})
+        return jsonify({"message":"URL Inactivated"})
+    else:
+        db.variables.update_one({"_id":"counter"},{"$inc":{"active":1}})
+        db.users.update_one({"email": email}, {"$inc": {"active": 1}})
+        db.websites.update_one({"shortURL":shortURL},{"$set":{"isActive":True}})
+
     return jsonify({"message":"URL Inactivated"})
 
 @app.route('/api/deleteURL',methods=['POST'])
@@ -139,3 +150,19 @@ def getPremium():
     email=get_jwt_identity()
     db.users.update_one({"email": email}, {"$set": {"premium": True}})
     return jsonify(premium=True)
+
+@app.route('/api/getAnalytics',methods=['GET'])
+@cross_origin()
+@jwt_required()
+def getAnalytics():
+    email=get_jwt_identity()
+    result=db.users.find_one({"email":email})
+    websites=len(result['websites'])
+    clicks=result['clicks']
+    active=result['active']
+    data={
+        "websites":websites,
+        "clicks":clicks,
+        "active":active
+    }
+    return jsonify(data),200
