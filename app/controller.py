@@ -98,8 +98,8 @@ def getTableData():
     result=db.users.find_one({"email":email})
     table=[]
     if result['websites']:
-        table=[{k:v for k,v in i.items() if k not in ['_id','user']} for i in result['websites']]
         table=result['websites']
+        table=[{k:v for k,v in i.items() if k not in ['_id','user']} for i in table]
     return jsonify(dataTable=table)
 
 @app.route('/api/inactivateURL',methods=['POST'])
