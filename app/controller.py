@@ -71,7 +71,7 @@ def getLongURL(shorturl):
             db.users.update_one({"email": email}, {"$inc": {"clicks": 1}})
             db.variables.update_one({"_id":"counter"},{"$inc":{"clicks":1}})
             db.websites.update_one({"shortURL":shorturl},{"$inc":{"clicks":1}})
-        if results['isActive']==False:
+        if results['isActive']==False or results['isActive']=='False':
             return "URL Not Found"
         longURL=results['longURL']
         return longURL
@@ -131,3 +131,11 @@ def deleteURL():
     })
     db.websites.delete_one({"shortURL":shortURL})
     return jsonify({"message":"URL Deleted"})
+
+@app.route('/api/getPremium',methods=['POST'])
+@cross_origin()
+@jwt_required()
+def getPremium():
+    email=get_jwt_identity()
+    db.users.update_one({"email": email}, {"$set": {"premium": True}})
+    return jsonify(premium=True)
