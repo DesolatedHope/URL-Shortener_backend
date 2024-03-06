@@ -100,3 +100,30 @@ def getTableData():
     if result['websites']:
         table=result['websites']
     return jsonify(dataTable=table)
+
+@app.route('/api/inactivateURL',methods=['POST'])
+@cross_origin()
+@jwt_required()
+def inactivateURL():
+    data=request.get_json()
+    shortURL=data['shortURL']
+    email=get_jwt_identity()
+    db.websites.update_one({"shortURL":shortURL,"user":email},{"$set":{"isActive":False}})
+    return jsonify({"message":"URL Inactivated"})
+
+@app.route('/api/deleteURL',methods=['POST'])
+@cross_origin()
+@jwt_required()
+def deleteURL():
+    data=request.get_json()
+    shortURL=data['shortURL']
+    email=get_jwt_identity()
+    db.users.update_one({"email": email}, {
+        "$pull": {
+            "websites": {
+                "shortURL": shortURL
+            }
+        }
+    })
+    db.websites.delete_one({"shortURL":shortURL})
+    return jsonify({"message":"URL Deleted"})
