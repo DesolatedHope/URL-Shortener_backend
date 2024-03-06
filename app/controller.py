@@ -5,7 +5,7 @@ from flask_cors import CORS, cross_origin
 from flask_jwt_extended import jwt_required,get_jwt_identity
 import datetime
 
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+CORS(app, resources={r"/api/*": {"origins": "http://shortyaz.vercel.app"}})
 
 elements="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 domain="shorty.westeurope.cloudapp.azure.com/"
@@ -109,19 +109,20 @@ def inactivateURL():
     data=request.get_json()
     shortURL=data['shortURL']
     email=get_jwt_identity()
-    result=db.websites.find_one({"shortURL":shortURL})
-    print(shortURL)
     shortURL=shortURL[-7:]
+    result=db.websites.find_one({"shortURL":shortURL})
     print(result)
     if result['isActive']==True:
         db.variables.update_one({"_id":"counter"},{"$inc":{"active":-1}})
         db.users.update_one({"email": email}, {"$inc": {"active": -1}})
         db.websites.update_one({"shortURL":shortURL},{"$set":{"isActive":False}})
+        db.users.update_one({"email": email, "websites._id": result["_id"]}, {"$inc": {"websites.$.isActive": False}})
         return jsonify({"message":"URL Inactivated"})
     else:
         db.variables.update_one({"_id":"counter"},{"$inc":{"active":1}})
         db.users.update_one({"email": email}, {"$inc": {"active": 1}})
         db.websites.update_one({"shortURL":shortURL},{"$set":{"isActive":True}})
+        db.users.update_one({"email": email, "websites._id": result["_id"]}, {"$inc": {"websites.$.isActive": True}})
 
     return jsonify({"message":"URL Inactivated"})
 
