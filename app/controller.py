@@ -3,6 +3,7 @@ from flask import request,jsonify
 from app.models import db,User
 from flask_cors import CORS, cross_origin
 from flask_jwt_extended import jwt_required,get_jwt_identity
+import datetime
 
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
 
@@ -31,12 +32,21 @@ def shortenURL():
     email=get_jwt_identity()
     db.variables.update_one({"_id":"counter"},{"$inc":{"counter":1}})
     response={
+        "_id":counter,
         "shortURL":shorturl,
         "longURL":longurl,
-        "_id":counter
+        "clicks":0,
+        "user":email,
+        "createdAt":datetime.datetime.now(),
+        "isActive":True
     }
     db.websites.insert_one(response)
     response["shortURL"]=domain+shorturl
+    db.users.update_one({"email": email}, {
+        "$push": {
+            "websites": response
+        }
+    })
     return response
 
 @app.route('/api/getLongURL',methods=["GET","POST"])
@@ -53,6 +63,15 @@ def redirect():
 def getLongURL(shorturl):
     results=db.websites.find_one({"shortURL":shorturl})
     if results:
+        email=results['user']
+        db.users.update_one({"email": email, "websites._id": results["_id"]}, {
+            "$inc": {
+                "websites.$.clicks": 1
+            }
+        })
+        db.websites.update_one({"shortURL":shorturl},{"$inc":{"clicks":1}})
+        if results['isActive']==False:
+            return "URL Not Found"
         longURL=results['longURL']
         return longURL
     return "URL Not Found"
@@ -69,3 +88,15 @@ def create_token():
 def signup():
     user=request.get_json()
     return User().signup(user)
+
+@app.route('/api/getTableData',methods=['GET'])
+@cross_origin()
+@jwt_required()
+def getTableData():
+    email=get_jwt_identity()
+    result=db.users.find_one({"email":email})
+    print(result)
+    table=[]
+    if result['websites']:
+        table=result['websites']
+    return jsonify(dataTable=table)

@@ -26,13 +26,9 @@ class User:
 
         if db.users.find_one({"email":user["email"]}):
             return jsonify({"error":"Email address already in use"}),400
-
+        user["websites"]=[]
         if db.users.insert_one(user):
             access_token=create_access_token(identity=user['email'])
             return jsonify(access_token=access_token),200
 
         return jsonify({"error":"Something went wrong"}),400
-    
-    def signout(self):
-        session.clear()
-        return jsonify({"status":"Signout successful"})
