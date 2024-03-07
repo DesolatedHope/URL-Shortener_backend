@@ -5,7 +5,7 @@ from flask_cors import CORS, cross_origin
 from flask_jwt_extended import jwt_required,get_jwt_identity
 import datetime
 
-CORS(app, resources={r"/api/*": {"origins": "shortyaz.vercel.app"}})
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 elements="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 domain="shorty.westeurope.cloudapp.azure.com/"
