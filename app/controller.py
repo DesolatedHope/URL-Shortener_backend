@@ -132,6 +132,7 @@ def inactivateURL():
 def deleteURL():
     data=request.get_json()
     shortURL=data['shortURL']
+    email=get_jwt_identity()
     db.users.update_one({"email": email}, {
         "$pull": {
             "websites": {
@@ -140,7 +141,6 @@ def deleteURL():
         }
     })
     shortURL=shortURL[-7:]
-    email=get_jwt_identity()
     result=db.websites.find_one({"shortURL":shortURL})
     db.variables.update_one({"_id":"counter"},{"$inc":{"websites":-1}})
     if result['isActive']==True:
