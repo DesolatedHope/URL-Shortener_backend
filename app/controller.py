@@ -115,13 +115,13 @@ def inactivateURL():
         db.variables.update_one({"_id":"counter"},{"$inc":{"active":-1}})
         db.users.update_one({"email": email}, {"$inc": {"active": -1}})
         db.websites.update_one({"shortURL":shortURL},{"$set":{"isActive":False}})
-        db.users.update_one({"email": email, "websites._id": result["_id"]}, {"$inc": {"websites.$.isActive": False}})
+        db.users.update_one({"email": email, "websites._id": result["_id"]}, {"$set": {"websites.$.isActive": False}})
         return jsonify(status=False)
     else:
         db.variables.update_one({"_id":"counter"},{"$inc":{"active":1}})
         db.users.update_one({"email": email}, {"$inc": {"active": 1}})
         db.websites.update_one({"shortURL":shortURL},{"$set":{"isActive":True}})
-        db.users.update_one({"email": email, "websites._id": result["_id"]}, {"$inc": {"websites.$.isActive": True}})
+        db.users.update_one({"email": email, "websites._id": result["_id"]}, {"$set": {"websites.$.isActive": True}})
         return jsonify(status=True)
 
     return jsonify({"message":"URL Inactivated"})
