@@ -132,14 +132,6 @@ def inactivateURL():
 def deleteURL():
     data=request.get_json()
     shortURL=data['shortURL']
-    shortURL=shortURL[-7:]
-    print(shortURL)
-    email=get_jwt_identity()
-    result=db.websites.find_one({"shortURL":shortURL})
-    db.variables.update_one({"_id":"counter"},{"$inc":{"websites":-1}})
-    if result['isActive']==True:
-        db.variables.update_one({"_id":"counter"},{"$inc":{"active":-1}})
-        db.users.update_one({"email": email}, {"$inc": {"active": -1}})
     db.users.update_one({"email": email}, {
         "$pull": {
             "websites": {
@@ -147,6 +139,13 @@ def deleteURL():
             }
         }
     })
+    shortURL=shortURL[-7:]
+    email=get_jwt_identity()
+    result=db.websites.find_one({"shortURL":shortURL})
+    db.variables.update_one({"_id":"counter"},{"$inc":{"websites":-1}})
+    if result['isActive']==True:
+        db.variables.update_one({"_id":"counter"},{"$inc":{"active":-1}})
+        db.users.update_one({"email": email}, {"$inc": {"active": -1}})
     db.websites.delete_one({"shortURL":shortURL})
     return jsonify({"message":"URL Deleted"})
 
