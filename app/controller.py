@@ -133,7 +133,11 @@ def deleteURL():
     data=request.get_json()
     shortURL=data['shortURL']
     email=get_jwt_identity()
-    db.variables.update_one({"_id":"counter"},{"$inc":{"active":-1}})
+    result=db.websites.find_one({"shortURL":shortURL})
+    db.variables.update_one({"_id":"counter"},{"$inc":{"websites":-1}})
+    if result['isActive']==True:
+        db.variables.update_one({"_id":"counter"},{"$inc":{"active":-1}})
+        db.users.update_one({"email": email}, {"$inc": {"active": -1}})
     db.users.update_one({"email": email}, {
         "$pull": {
             "websites": {
