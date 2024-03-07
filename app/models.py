@@ -33,6 +33,7 @@ class User:
         user["clicks"]=0
         user["active"]=0
         user["premium"]=False
+        db.variables.update_one({"_id":"counter"},{"$inc":{"users":1}})
         if db.users.insert_one(user):
             expires=timedelta(days=1)
             access_token=create_access_token(identity=user['email'],expires_delta=expires)

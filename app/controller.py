@@ -167,3 +167,9 @@ def getAnalytics():
         "active":active
     }
     return jsonify(data),200
+
+@app.route('/api/getStats',methods=['GET'])
+@cross_origin()
+def getStats():
+    result=db.variables.find_one({"_id":"counter"})
+    return jsonify(analytics=result)
