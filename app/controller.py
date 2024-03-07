@@ -102,7 +102,7 @@ def getTableData():
         table=[{k:v for k,v in i.items() if k not in ['_id','user']} for i in table]
     return jsonify(dataTable=table)
 
-@app.route('/api/inactivateURL',methods=['POST'])
+@app.route('/api/alterStatus',methods=['POST'])
 @cross_origin()
 @jwt_required()
 def inactivateURL():
@@ -111,18 +111,18 @@ def inactivateURL():
     email=get_jwt_identity()
     shortURL=shortURL[-7:]
     result=db.websites.find_one({"shortURL":shortURL})
-    print(result)
     if result['isActive']==True:
         db.variables.update_one({"_id":"counter"},{"$inc":{"active":-1}})
         db.users.update_one({"email": email}, {"$inc": {"active": -1}})
         db.websites.update_one({"shortURL":shortURL},{"$set":{"isActive":False}})
         db.users.update_one({"email": email, "websites._id": result["_id"]}, {"$inc": {"websites.$.isActive": False}})
-        return jsonify({"message":"URL Inactivated"})
+        return jsonify(status=False)
     else:
         db.variables.update_one({"_id":"counter"},{"$inc":{"active":1}})
         db.users.update_one({"email": email}, {"$inc": {"active": 1}})
         db.websites.update_one({"shortURL":shortURL},{"$set":{"isActive":True}})
         db.users.update_one({"email": email, "websites._id": result["_id"]}, {"$inc": {"websites.$.isActive": True}})
+        return jsonify(status=True)
 
     return jsonify({"message":"URL Inactivated"})
 
