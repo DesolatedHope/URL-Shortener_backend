@@ -16,4 +16,4 @@ def redirectToWebsite(shorturl):
 
 @app.route('/')
 def index():
-    return "Welcome to Shorty.az"
+    return redirect('https://shortyaz.vercel.app/')
