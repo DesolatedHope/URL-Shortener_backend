@@ -133,6 +133,7 @@ def deleteURL():
     data=request.get_json()
     shortURL=data['shortURL']
     shortURL=shortURL[-7:]
+    print(shortURL)
     email=get_jwt_identity()
     result=db.websites.find_one({"shortURL":shortURL})
     db.variables.update_one({"_id":"counter"},{"$inc":{"websites":-1}})
